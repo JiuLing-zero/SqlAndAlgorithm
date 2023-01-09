@@ -51,7 +51,7 @@
         <!--        </resources>-->
 
         <sourceDirectory>src/main/scala</sourceDirectory>
-        <!--<testSourceDirectory>src/test/scala</testSourceDirectory>-->
+        <!--<testSourceDirectory>src/JavaTest/scala</testSourceDirectory>-->
         <plugins>
             <!-- scala 打包插件 -->
             <plugin>
