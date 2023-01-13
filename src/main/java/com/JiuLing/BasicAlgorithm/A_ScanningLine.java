@@ -16,10 +16,13 @@ public class A_ScanningLine {
 //        minMeetingRooms_Driver();
 //        mergeIntervals_Driver();
 //        insertInterval_Driver();
-        removeInterval_Driver();
+//        removeInterval_Driver();
+//        eraseOverlapIntervals_Driver();
+//        removeCoveredIntervals_Driver();
+        SummaryRanges_Driver();
     }
 
-// * * * * * * * * * * 第一题，LintCode第391题 https://www.lintcode.com/problem/391/ * * * * * * * * * *
+// * * * * * * * * * * 第一题，countOfAirplanes * * * * * * * * * *
     public static class Interval {
        int start, end;
        Interval(int start, int end) {
@@ -61,7 +64,7 @@ public class A_ScanningLine {
        }
        return ans;
    }
-// * * * * * * * * * * 第一题，LintCode第391题 https://www.lintcode.com/problem/391/ [Over] * * * * * * * * * *
+// * * * * * * * * * * 第一题，countOfAirplanes [Over] * * * * * * * * * *
 // * * * * * * * * * * 第二题，Meeting Rooms * * * * * * * * * *
     public static boolean canAttendMeetings(Interval[] intervals){
         Arrays.sort(intervals, (a, b) -> a.start - b.start);
@@ -179,17 +182,62 @@ public class A_ScanningLine {
         if(intervals.length == 0) return 0;
         //按照结束时间排序
         Arrays.sort(intervals, (a, b) -> a[1] - b[1]);
-        int count = 0, end = Integer.MAX_VALUE;
-        for (int[] cur : intervals) {
+        int count = 0;
+        int end = intervals[0][1];
+        //如果冲突总是删除end靠后的，给下一个比较的interval留下更多的空间。(即md文件的解题思路里有overlap就删除current)
+        for (int i = 1; i < intervals.length; i++) {
+            int[] cur = intervals[i];
             if(end <= cur[0]) end = cur[1];
             else count++;
         }
         return count;
     }
-
-    //基础算法(一) -- 扫描线   BV1Po4y1Z7sm   32:51
-
 // * * * * * * * * * * 第七题，Non-overlapping Intervals [Over] * * * * * * * * * *
+// * * * * * * * * * * 第八题，Remove Covered Intervals * * * * * * * * * *
+    public static int removeCoveredIntervals(int[][] intervals){
+        //start相同就按end逆序，start不同就正序排
+        Arrays.sort(intervals, (a, b) -> a[0] == b[0] ? b[1]-a[1] : a[0] - b[0]);
+        int count = 0, curEnd = 0;
+        for (int[] cur : intervals) {
+            //满足if时没有被覆盖，剩余区间数+1，更新curEnd。不满足if时有覆盖，删除覆盖区间[cur]并用之前的curEnd继续判断
+            if(curEnd < cur[1]){
+                curEnd = cur[1];
+                count++;
+            }
+        }
+        return count;
+    }
+// * * * * * * * * * * 第八题，Remove Covered Intervals [Over] * * * * * * * * * *
+// * * * * * * * * * * 第九题，Data Stream as Disjoint Intervals * * * * * * * * * *
+    static class SummaryRanges {
+        static TreeSet<int[]> set = new TreeSet<>((a, b) -> a[0] == b[0] ? a[1]-b[1] : a[0]-b[0]);
+
+        public static void addNum(int val){
+            int[] interval = new int[]{val, val};
+            if(set.contains(interval)) return;
+            int[] low = set.lower(interval);//这里因为interval是(val, val)，low[0]一定小于val
+            int[] high = set.higher(interval);//这里的high可能是(val, val+)的形式，所以需要if判断
+            if(high != null && high[0] == val) return;
+            if(low != null && low[1]+1 == val && high != null && val+1 == high[0]){//两端都可合并
+                low[1] = high[1];
+                set.remove(high);
+            }
+            else if(low != null && low[1]+1 >= val) low[1] = Math.max(low[1], val);//可以和左侧的low合并
+            else if(high != null && val+1 == high[0]) high[0] = val;//可以和右侧的high合并
+            else set.add(interval);
+        }
+        public static int[][] getIntervals(){
+            List<int[]> res = new ArrayList<>();
+            for (int[] interval : set) res.add(interval);
+            return res.toArray(new int[0][]);
+        }
+    }
+// * * * * * * * * * * 第九题，Data Stream as Disjoint Intervals [Over] * * * * * * * * * *
+// * * * * * * * * * * 第十题，Meeting Scheduler * * * * * * * * * *
+
+    // BV1Po4y1Z7sm 42:07
+
+// * * * * * * * * * * 第十题，Meeting Scheduler [Over] * * * * * * * * * *
 
 
 
@@ -203,19 +251,19 @@ public class A_ScanningLine {
         airplanes.add(new Interval(4, 7));
         airplanes.add(new Interval(3, 8));
 
-        System.out.println(countOfAirplanes(airplanes));
+        System.out.println("天上飞机最多时有:"+countOfAirplanes(airplanes));
     }
     //2
     public static void canAttendMeetings_Driver(){
         Interval[] intervals = new Interval[]{new Interval(0, 30), new Interval(5, 10), new Interval(15, 20)};
-        System.out.println(canAttendMeetings(intervals));
+        System.out.println("是否可以参加所有会议:"+canAttendMeetings(intervals));
     }
     //3
     public static void minMeetingRooms_Driver(){
         int[][] intervals = new int[][]{{1, 10}, {2, 7}, {3, 19}, {8, 12}, {10, 20}, {11, 30}};
-        System.out.println(minMeetingRooms(intervals));
-        System.out.println(minMeetingRooms3(intervals));
-        System.out.println(minMeetingRoomsPQ(intervals));//该方法很大概率改变intervals的数据，放在最后跑
+        System.out.println("所需最少的会议室数量:"+minMeetingRooms(intervals));
+        System.out.println("所需最少的会议室数量:"+minMeetingRooms3(intervals));
+        System.out.println("所需最少的会议室数量:"+minMeetingRoomsPQ(intervals));//该方法很大概率改变intervals的数据，放在最后跑
     }
     //4
     public static void mergeIntervals_Driver(){
@@ -232,5 +280,26 @@ public class A_ScanningLine {
         int[][] intervals = new int[][]{{1, 3}, {6, 19}, {22, 30}};
         System.out.println(removeInterval(intervals, new int[]{2 ,9}));
     }
+    //7
+    public static void eraseOverlapIntervals_Driver(){
+        int[][] intervals1 = new int[][]{{1, 2}, {2, 3}, {3, 4}, {1, 3}};//1
+        int[][] intervals2 = new int[][]{{1, 2}, {1, 2}, {1, 2}};//2
+        System.out.println("删除的最小区间数:"+eraseOverlapIntervals(intervals2));
+    }
+    //8
+    public static void removeCoveredIntervals_Driver(){
+        int[][] intervals = new int[][]{{2, 3}, {1, 19}, {22, 30}};
+        System.out.println("剩余的区间数:"+removeCoveredIntervals(intervals));
+    }
+    //9
+    public static void SummaryRanges_Driver(){
+        SummaryRanges.addNum(1);System.out.println(Arrays.deepToString(SummaryRanges.getIntervals()));
+        SummaryRanges.addNum(3);System.out.println(Arrays.deepToString(SummaryRanges.getIntervals()));
+        SummaryRanges.addNum(7);System.out.println(Arrays.deepToString(SummaryRanges.getIntervals()));
+        SummaryRanges.addNum(2);System.out.println(Arrays.deepToString(SummaryRanges.getIntervals()));
+        SummaryRanges.addNum(6);System.out.println(Arrays.deepToString(SummaryRanges.getIntervals()));
+    }
+
+
 
 }
