@@ -19,7 +19,9 @@ public class A_ScanningLine {
 //        removeInterval_Driver();
 //        eraseOverlapIntervals_Driver();
 //        removeCoveredIntervals_Driver();
-        SummaryRanges_Driver();
+//        SummaryRanges_Driver();
+//        minAvailableDuration_Driver();
+        intervalIntersection_Driver();
     }
 
 // * * * * * * * * * * 第一题，countOfAirplanes * * * * * * * * * *
@@ -234,10 +236,67 @@ public class A_ScanningLine {
     }
 // * * * * * * * * * * 第九题，Data Stream as Disjoint Intervals [Over] * * * * * * * * * *
 // * * * * * * * * * * 第十题，Meeting Scheduler * * * * * * * * * *
-
-    // BV1Po4y1Z7sm 42:07
-
+    public static List<Integer> minAvailableDuration(int[][] slots1, int[][] slots2, int duration){
+        Arrays.sort(slots1, (a, b) -> a[0] - b[0]);
+        Arrays.sort(slots2, (a, b) -> a[0] - b[0]);
+        int i = 0;
+        int j = 0;
+        int n1 = slots1.length;
+        int n2 = slots2.length;
+        while (i < n1 && j < n2){
+            int intersectStart = Math.max(slots1[i][0], slots2[j][0]);//公共起始时间，较晚的起始
+            int intersectEnd = Math.min(slots1[i][1], slots2[j][1]);//公共结束时间，较早的结束
+            if(intersectEnd - intersectStart >= duration)
+//                return List.of(intersectStart, intersectStart+duration);//JAVA9特性
+                return Arrays.asList(intersectStart, intersectStart+duration);
+                //结束时间早的换下一个time slot
+            else if(slots1[i][1] < slots2[j][1]) i++;
+            else j++;
+        }
+        return new ArrayList<>();
+    }
 // * * * * * * * * * * 第十题，Meeting Scheduler [Over] * * * * * * * * * *
+// * * * * * * * * * * 第十一题，Interval List Intersections * * * * * * * * * *
+    public static int[][] intervalIntersection(int[][] A, int[][] B){
+        //题干已表名进行过排序，这里不再sort
+        List<int[]> res = new ArrayList<>();
+        int i = 0;
+        int j = 0;
+        while (i < A.length && j < B.length){
+            int low = Math.max(A[i][0], B[j][0]);
+            int high = Math.min(A[i][1], B[j][1]);
+            if(low <= high) res.add(new int[]{low, high});
+            if(A[i][1] < B[j][1]) i++;
+            else j++;
+        }
+        return res.toArray(new int[0][]);
+    }
+// * * * * * * * * * * 第十一题，Interval List Intersections [Over] * * * * * * * * * *
+// * * * * * * * * * * 第十二题，Employee Free Time * * * * * * * * * *
+    public static List<Interval> employeeFreeTime(List<List<Interval>> schedule){
+        List<Interval> res = new ArrayList<>();
+        PriorityQueue<Interval> pq = new PriorityQueue<>((a, b) -> (a.start - b.start));
+        for (List<Interval> list : schedule) {
+            for (Interval interval : list) {
+                pq.add(interval);
+            }
+        }
+        Interval cur = pq.poll();
+        while (!pq.isEmpty()){
+            if(cur.end >= pq.peek().start){
+                cur.end = Math.max(cur.end, pq.poll().end);
+            }else {
+                res.add(new Interval(cur.end, pq.peek().start));
+                cur = pq.poll();
+            }
+        }
+        return res;
+    }
+    // BV1Po4y1Z7sm 46:43
+// * * * * * * * * * * 第十二题，Employee Free Time [Over] * * * * * * * * * *
+
+
+
 
 
 
@@ -299,6 +358,19 @@ public class A_ScanningLine {
         SummaryRanges.addNum(2);System.out.println(Arrays.deepToString(SummaryRanges.getIntervals()));
         SummaryRanges.addNum(6);System.out.println(Arrays.deepToString(SummaryRanges.getIntervals()));
     }
+    public static void minAvailableDuration_Driver(){
+        int[][] slots1 = new int[][]{{10, 50}, {60, 120}, {140, 210}};
+        int[][] slots2 = new int[][]{{0, 15}, {60, 70}};
+        int duration = 8;
+        System.out.println(minAvailableDuration(slots1, slots2, duration));
+    }
+    public static void intervalIntersection_Driver(){
+        int[][] A = new int[][]{{0, 2}, {5, 10}, {13, 23}, {24, 25}};
+        int[][] B = new int[][]{{1, 5}, {8, 12}, {15, 24}, {25, 26}};
+        System.out.println(Arrays.deepToString(intervalIntersection(A, B)));
+    }
+
+
 
 
 
