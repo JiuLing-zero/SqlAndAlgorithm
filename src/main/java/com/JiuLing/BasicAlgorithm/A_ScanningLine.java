@@ -5,23 +5,25 @@ import java.util.*;
 import java.util.List;
 
 /**
- * Description 基础算法-扫描线 BV1Po4y1Z7sm
+ * Description 基础算法1-扫描线 BV1Po4y1Z7sm
  * Create by hfli11 on 2023/1/10 14:57
  */
 public class A_ScanningLine {
 
     public static void main(String[] args) {
-//        countOfAirplanes_Driver();
-//        canAttendMeetings_Driver();
-//        minMeetingRooms_Driver();
-//        mergeIntervals_Driver();
-//        insertInterval_Driver();
-//        removeInterval_Driver();
-//        eraseOverlapIntervals_Driver();
-//        removeCoveredIntervals_Driver();
-//        SummaryRanges_Driver();
-//        minAvailableDuration_Driver();
+        countOfAirplanes_Driver();
+        canAttendMeetings_Driver();
+        minMeetingRooms_Driver();
+        mergeIntervals_Driver();
+        insertInterval_Driver();
+        removeInterval_Driver();
+        eraseOverlapIntervals_Driver();
+        removeCoveredIntervals_Driver();
+        SummaryRanges_Driver();
+        minAvailableDuration_Driver();
         intervalIntersection_Driver();
+        employeeFreeTime_Driver();
+        getSkyline_Driver();
     }
 
 // * * * * * * * * * * 第一题，countOfAirplanes * * * * * * * * * *
@@ -31,7 +33,15 @@ public class A_ScanningLine {
            this.start = start;
            this.end = end;
        }
-   }
+
+    @Override
+    public String toString() {
+        return "Interval{" +
+                "start=" + start +
+                ", end=" + end +
+                '}';
+    }
+}
 
    public static int countOfAirplanes(List<Interval> airplanes){
         // sweep line 扫描线法
@@ -283,23 +293,209 @@ public class A_ScanningLine {
         }
         Interval cur = pq.poll();
         while (!pq.isEmpty()){
+            assert cur != null;
+            //两个interval交叉了，没有空隙，我们合并两个interval
             if(cur.end >= pq.peek().start){
                 cur.end = Math.max(cur.end, pq.poll().end);
-            }else {
+            }else {//两个interval有空隙，我们加入到答案
                 res.add(new Interval(cur.end, pq.peek().start));
                 cur = pq.poll();
             }
         }
         return res;
     }
-    // BV1Po4y1Z7sm 46:43
+
 // * * * * * * * * * * 第十二题，Employee Free Time [Over] * * * * * * * * * *
+// * * * * * * * * * * 第十三题，The Skyline Problem * * * * * * * * * *
+    //扫描线解法
+    public static List<List<Integer>> getSkyline(int[][] buildings){
+        List<List<Integer>> res = new ArrayList<>();
+        List<int[]> height = new ArrayList<>();
+        for (int[] b : buildings) {
+            int l = b[0], r = b[1], h = b[2];
+            height.add(new int[]{l, -h});//房子起点高度为负数，这样sort完，先被访问
+            height.add(new int[]{r, h});//房子终点高度为正数，这样sort完，后被访问
+        }
+        height.sort((a, b) -> a[0] == b[0] ? a[1] - b[1] : a[0] - b[0]);
+        PriorityQueue<Integer> pq = new PriorityQueue<>((a, b) -> (b - a));
+        pq.offer(0);
+        int preMax = 0;
+        for (int[] h : height) {
+            int point = h[0], high = h[1];
+            if(high < 0) pq.offer(-high);//如果是左端点，说明存在一条往右延伸的可记录的边，将高度存入优先队列
+            else pq.remove(high);        //如果是右端点，说明这条边结束了，将当前高度从队列中移除
+            // 取出最高高度，如果当前不与前一矩形“上边”延展而来的那些边重合，则可以被记录
+            int curMax = pq.peek();
+            if(curMax != preMax){
+                res.add(Arrays.asList(point, curMax));
+                preMax = curMax;
+            }
+        }
+        return res;
+    }
 
+    //延迟删除
+    public static List<List<Integer>> getSkyline_delay(int[][] buildings){
+        // 第 1 步：预处理
+        List<List<Integer>> res = new ArrayList<>();
+        List<int[]> buildingPoints = new ArrayList<>();
+        for (int[] b : buildings) {
+            int l = b[0], r = b[1], h = b[2];
+            buildingPoints.add(new int[]{l, -h});//房子起点高度为负数，这样sort完，先被访问
+            buildingPoints.add(new int[]{r, h});//房子终点高度为正数，这样sort完，后被访问
+        }
+        // 第 2 步：按照横坐标排序，横坐标相同的时候，高度高的在前面
+        buildingPoints.sort((a, b) -> a[0] == b[0] ? a[1] - b[1] : a[0] - b[0]);
+        // 第 3 步：扫描一遍动态计算出结果
+        PriorityQueue<Integer> pq = new PriorityQueue<>(Collections.reverseOrder());
+        // 哈希表，记录「延迟删除」的元素，key 为元素，value 为需要删除的次数
+        Map<Integer, Integer> delayed = new HashMap<>();
+        // 最开始的时候，需要产生高度差，所以需要加上一个高度为 0，宽度为 0 的矩形
+        pq.offer(0);
+        // 为计算高度差，需要保存之前最高的高度
+        int preMax = 0;
+        for (int[] point : buildingPoints) {
+            int start = point[0], high = point[1];
+            if(high < 0) pq.offer(-high);
+            // 不是真的删除 buildingPoint[1]，把它放进 delayed，等到堆顶元素是 buildingPoint[1] 的时候，才真的删除
+            else delayed.put(high, delayed.getOrDefault(high, 0) + 1);
+            //如果堆顶元素在延迟集合中，才真正删除，这一步可能执行多次，所以放在while中
+            //while(true) 也可以，因为pq一定不会为空
+            while (!pq.isEmpty()){
+                int curMax = pq.peek();
+                if(delayed.containsKey(curMax)){
+                    delayed.put(curMax, delayed.get(curMax) - 1);
+                    if(delayed.get(curMax) == 0) delayed.remove(curMax);
+                    pq.poll();
+                }else break;
+            }
+            int curMax = pq.peek();
+            //有高度差，才有关键点出现
+            if (curMax != preMax){
+                // 正在扫过的左端点的值
+                res.add(Arrays.asList(start, curMax));
+                // 当前高度成为计算高度差的标准
+                preMax = curMax;
+            }
+        }
+        return res;
+    }
 
+    //线段树解法
+    //区间更新，查找每个位置的最大生成结果
+    public static List<List<Integer>> getSkyline_segmentTree(int[][] buildings){
+        List<List<Integer>> ans = new ArrayList<>();
+        // 1. 位置离散化
+        Map<Integer, Integer> map = new HashMap<>();
 
+        // a.数据去重, 排序
+        TreeSet<Integer> set = new TreeSet<>(); // 去重后的原始位置
+        for (int[] b : buildings) {
+            set.add(b[0]);
+            set.add(b[1]);
+        }
+        // b.对原始位置,分配离散化后的位置
+        int idx = 0;
+        for (int pos : set) {
+            map.put(pos, idx++);
+        }
 
+        // 2.添加数据到线段树
+        int N = map.size();
+        SegmentTree seg = new SegmentTree(N);
+        for (int[] b : buildings) {
+            // 区间:[开始, 结束), 左闭右开
+            // 线段树中, 比实际位置要+1(数据从1开始的)
+            int s = map.get(b[0]) + 1;
+            int e = map.get(b[1]);
+            if(s > e) continue; // 纸片楼
+            int h = b[2];
+            seg.update(s, e, h, 1, N, 1);
+        }
 
+        // 3. 生成答案
+        int preH = -1;
+        for (int x : set) { // 遍历排序去重后的原始位置
+            int curX = map.get(x) + 1; // 得到离散化位置
+            int curH = seg.query(curX, curX, 1, N, 1);
+            if (curH != preH) {
+                List<Integer> list = new ArrayList<>();
+                list.add(x);
+                list.add(curH);
+                ans.add(list);
+            }
+            preH = curH;
+        }
+        return ans;
+    }
+    public static class SegmentTree{
+        private int n;
+        private int[] max;//高度数组
+        private int[] update;//lazy数组
 
+        public SegmentTree(int maxSize){
+            n = maxSize + 1;
+            max = new int[n << 2];
+            update = new int[n << 2];
+            Arrays.fill(update, -1);
+        }
+
+        public void update(int index, int c){
+            update(index, index, c, 1, n, 1);
+        }
+
+        public int max(int right){
+            return query(right, right, 1, n, 1);
+        }
+
+        private void pushUp(int rt){
+            max[rt] = Math.max(max[rt << 1], max[rt << 1 | 1]);
+        }
+
+        private void pushDown(int rt){
+            if(update[rt] != -1){
+                update[rt << 1] = Math.max(update[rt << 1], update[rt]);
+                update[rt << 1 | 1] = Math.max(update[rt << 1 | 1], update[rt]);
+                max[rt << 1] = Math.max(max[rt << 1], update[rt]);
+                max[rt << 1 | 1] = Math.max(max[rt << 1 | 1], update[rt]);
+                update[rt] = -1;
+            }
+        }
+
+        private void update(int L, int R, int C, int l, int r, int rt) {
+            if (L <= l && r <= R) {
+                max[rt] = Math.max(max[rt], C);
+                update[rt] = Math.max(update[rt], C);
+                return;
+            }
+            int mid = (l + r) >> 1;
+            pushDown(rt);
+            if (L <= mid) {
+                update(L, R, C, l, mid, rt << 1);
+            }
+            if (R > mid) {
+                update(L, R, C, mid + 1, r, rt << 1 | 1);
+            }
+            pushUp(rt);
+        }
+
+        private int query(int L, int R, int l, int r, int rt) {
+            if (L <= l && r <= R) {
+                return max[rt];
+            }
+            int mid = (l + r) >> 1;
+            pushDown(rt);
+            int ans = 0;
+            if (L <= mid) {
+                ans = Math.max(ans, query(L, R, l, mid, rt << 1));
+            }
+            if (R > mid) {
+                ans = Math.max(ans, query(L, R, mid + 1, r, rt << 1 | 1));
+            }
+            return ans;
+        }
+    }
+// * * * * * * * * * * 第十三题，The Skyline Problem [Over] * * * * * * * * * *
 
     //1
     public static void countOfAirplanes_Driver(){
@@ -358,20 +554,38 @@ public class A_ScanningLine {
         SummaryRanges.addNum(2);System.out.println(Arrays.deepToString(SummaryRanges.getIntervals()));
         SummaryRanges.addNum(6);System.out.println(Arrays.deepToString(SummaryRanges.getIntervals()));
     }
+    //10
     public static void minAvailableDuration_Driver(){
         int[][] slots1 = new int[][]{{10, 50}, {60, 120}, {140, 210}};
         int[][] slots2 = new int[][]{{0, 15}, {60, 70}};
         int duration = 8;
         System.out.println(minAvailableDuration(slots1, slots2, duration));
     }
+    //11
     public static void intervalIntersection_Driver(){
         int[][] A = new int[][]{{0, 2}, {5, 10}, {13, 23}, {24, 25}};
         int[][] B = new int[][]{{1, 5}, {8, 12}, {15, 24}, {25, 26}};
         System.out.println(Arrays.deepToString(intervalIntersection(A, B)));
     }
+    //12
+    public static void employeeFreeTime_Driver(){
+        List<List<Interval>> schedule = new ArrayList<>();
+        schedule.add(Arrays.asList(new Interval(1,2),new Interval(5,6)));
+        schedule.add(Collections.singletonList(new Interval(1, 3)));
+        schedule.add(Collections.singletonList(new Interval(4, 10)));////[[3,4]]
 
-
-
-
+        List<List<Interval>> schedule1 = new ArrayList<>();
+        schedule1.add(Arrays.asList(new Interval(1,3),new Interval(6,7)));
+        schedule1.add(Collections.singletonList(new Interval(2,4)));
+        schedule1.add(Arrays.asList(new Interval(2,5),new Interval(9,12)));//[[5,6],[7,9]]
+        System.out.println(employeeFreeTime(schedule1));
+    }
+    //13
+    public static void getSkyline_Driver(){
+        int[][] buildings = new int[][]{{0, 2, 3}, {2, 5, 3}};
+        System.out.println(getSkyline(buildings));
+        System.out.println(getSkyline_delay(buildings));
+        System.out.println(getSkyline_segmentTree(buildings));
+    }
 
 }

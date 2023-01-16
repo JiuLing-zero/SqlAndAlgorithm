@@ -108,4 +108,29 @@ Interval类在第一题代码模板里
 **解题思路**
 ![](../../../../../../picture/A_ScanningLine/A_ScanningLine_24Interval List Intersections.png)
 
+### 第十二题，Employee Free Time
+我们有一个员工的时间表列表，它表示每个员工的工作时间。  
+每个员工都有一个不重叠的间隔列表，这些间隔是按顺序排列的。  
+返回有限间隔的列表，表示所有员工的公共正长度空闲时间，也是按顺序排列的。  
+(尽管我们用[x, y]的形式表示interval，但其中的对象是intervals，而不是列表或数组。例如:schedule[0][0].Start = 1, schedule[0][0].End = 2,且schedule[0][0][0]未定义)。  
+此外，我们不会在答案中包括[5,5]这样的间隔，因为它们的长度为零。
+![](../../../../../../picture/A_ScanningLine/A_ScanningLine_25Employee Free Time.png)
+**解题思路**
+![](../../../../../../picture/A_ScanningLine/A_ScanningLine_26Employee Free Time.png)
+
+### 第十三题，The Skyline Problem
+![](../../../../../../picture/A_ScanningLine/A_ScanningLine_27The Skyline Problem.png)
+**解法一**
+在pq里，找到一个点是O n, 删除这个点是log n。所以该解法并非最优
+![](../../../../../../picture/A_ScanningLine/A_ScanningLine_28The Skyline Problem.png)
+**解法二：延迟删除法**
+「延迟删除」技巧，设计一个哈希表 delayed，记录删除元素，以及被删除的次数。规则是：一旦堆顶元素在延迟删除集合中：  
+
+* 删除堆顶元素；
+* 延迟删除的哈希表里，对应的次数 -1。  
+
+反复这样做下去，直到堆顶元素不在延迟删除的集合中。优先队列的「延迟删除」技巧请见「力扣」第 480 题：滑动窗口中位数 的 官方题解。
+
+
+
 
