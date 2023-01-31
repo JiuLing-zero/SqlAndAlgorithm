@@ -26,23 +26,24 @@ public class A_ScanningLine {
         getSkyline_Driver();
     }
 
-// * * * * * * * * * * 第一题，countOfAirplanes * * * * * * * * * *
+    //公共类 Interval
     public static class Interval {
-       int start, end;
-       Interval(int start, int end) {
-           this.start = start;
-           this.end = end;
-       }
+        int start, end;
+        Interval(int start, int end) {
+            this.start = start;
+            this.end = end;
+        }
 
-    @Override
-    public String toString() {
-        return "Interval{" +
-                "start=" + start +
-                ", end=" + end +
-                '}';
+        @Override
+        public String toString() {
+            return "Interval{" +
+                    "start=" + start +
+                    ", end=" + end +
+                    '}';
+        }
     }
-}
 
+// * * * * * * * * * * 第一题，countOfAirplanes * * * * * * * * * *
    public static int countOfAirplanes(List<Interval> airplanes){
         // sweep line 扫描线法
 

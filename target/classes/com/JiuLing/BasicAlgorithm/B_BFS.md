@@ -25,6 +25,5 @@ public class TreeNode {
 ```
 
 ### 第二题，BinaryTreeLevelOrderTraversal
-基础模板题目，需要熟练掌握  
 给定一棵二叉树，返回其节点值的层次顺序遍历。(即，从左到右，一层一层)。
 ![](../../../../../../picture/B_BFS/4BinaryTreeLevelOrderTraversal.png)
