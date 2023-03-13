@@ -56,7 +56,9 @@ public class A_ScanningLine {
 
        //根据时间排序。如果时间(p.x)相同，则根据题干，降落优先级大于起飞，排在前面(p1.y - p2.y)
        list.sort((Point p1, Point p2) -> {
-           if (p1.x == p2.x) return p1.y - p2.y;
+           if (p1.x == p2.x) {
+               return p1.y - p2.y;
+           }
            return p1.x - p2.x;
        });
 //       Collections.sort(list, new Comparator<Point>() {
@@ -71,8 +73,11 @@ public class A_ScanningLine {
        int cnt = 0;
        int ans = 0;
        for (Point p : list) {
-           if(p.y == 1) cnt++;
-           else cnt--;
+           if(p.y == 1) {
+               cnt++;
+           } else {
+               cnt--;
+           }
            ans = Math.max(ans, cnt);
        }
        return ans;
@@ -81,8 +86,11 @@ public class A_ScanningLine {
 // * * * * * * * * * * 第二题，Meeting Rooms * * * * * * * * * *
     public static boolean canAttendMeetings(Interval[] intervals){
         Arrays.sort(intervals, (a, b) -> a.start - b.start);
-        for (int i = 0; i < intervals.length - 1; i++)
-            if(intervals[i].end >intervals[i+1].start) return false;
+        for (int i = 0; i < intervals.length - 1; i++) {
+            if(intervals[i].end >intervals[i+1].start) {
+                return false;
+            }
+        }
         return true;
     }
 // * * * * * * * * * * 第二题，Meeting Rooms [Over] * * * * * * * * * *
@@ -108,15 +116,21 @@ public class A_ScanningLine {
         Arrays.sort(intervals, (a, b) -> a[0] - b[0]);
         //创建一个有初始比较器的PriorityQueue优先队列
         PriorityQueue<int[]> heap = new PriorityQueue<>((a, b) -> a[1] - b[1]);
-        if(intervals.length != 0) heap.offer(intervals[0]);
-        else return 0;
+        if(intervals.length != 0) {
+            heap.offer(intervals[0]);
+        } else {
+            return 0;
+        }
         for (int i = 1; i < intervals.length; i++) {
             //每次cur获取到的heap的会议，其结束时间在heap队列里都是最小的(因为比较器)
             int[] cur = heap.poll();
             assert cur != null;
             //如果cur的结束时间小，更新cur的结束时间(即cur与新会议不冲突)；否则heap增加一个会议室
-            if (cur[1] <= intervals[i][0]) cur[1] = intervals[i][1];
-            else heap.offer(intervals[i]);
+            if (cur[1] <= intervals[i][0]) {
+                cur[1] = intervals[i][1];
+            } else {
+                heap.offer(intervals[i]);
+            }
             heap.offer(cur);
         }
         return heap.size();
@@ -135,8 +149,11 @@ public class A_ScanningLine {
         int room = 0, endRoom = 0;
         //遍历starts数组，每次拿开始时间和ends[endRoom]相比，如果小那么ends[endRoom]保持不变
         for (int i = 0; i < starts.length; i++) {
-            if(starts[i] < ends[endRoom]) room++;
-            else endRoom++;
+            if(starts[i] < ends[endRoom]) {
+                room++;
+            } else {
+                endRoom++;
+            }
         }
         return room;
     }
@@ -144,13 +161,16 @@ public class A_ScanningLine {
 // * * * * * * * * * * 第四题，Merge Intervals * * * * * * * * * *
     public static int[][] mergeIntervals(int[][] intervals){
         List<int[]> res = new ArrayList<>();
-        if(intervals == null || intervals.length == 0) return new int[0][];
+        if(intervals == null || intervals.length == 0) {
+            return new int[0][];
+        }
         Arrays.sort(intervals, (a, b) -> a[0] - b[0]);
         int[] cur = intervals[0];
         //cur已确保开始时间最早，如果next的结束时间比cur早，那么cur可以更新到结果里，同时cur赋值为next
         for (int[] next : intervals) {
-            if(cur[1] >= next[0]) cur[1] = Math.max(cur[1], next[1]);
-            else {
+            if(cur[1] >= next[0]) {
+                cur[1] = Math.max(cur[1], next[1]);
+            } else {
                 res.add(cur);
                 cur = next;
             }
@@ -163,8 +183,9 @@ public class A_ScanningLine {
     public static int[][] insertInterval(int[][] intervals, int[] newInterval){
         List<int[]> res = new ArrayList<>();
         for (int[] cur : intervals) {
-            if (newInterval == null || cur[1] < newInterval[0]) res.add(cur);//newInterval未到插入点
-            else if (cur[0] > newInterval[1]) {//newInterval与cur不重叠，加入res
+            if (newInterval == null || cur[1] < newInterval[0]) {
+                res.add(cur);//newInterval未到插入点
+            } else if (cur[0] > newInterval[1]) {//newInterval与cur不重叠，加入res
                 res.addAll(Arrays.asList(newInterval, cur));
 //                res.addAll(List.of(newInterval, cur));//java9特性
                 newInterval = null;
@@ -173,7 +194,9 @@ public class A_ScanningLine {
                 newInterval[1] = Math.max(newInterval[1], cur[1]);
             }
         }
-        if(newInterval != null) res.add(newInterval);
+        if(newInterval != null) {
+            res.add(newInterval);
+        }
         return res.toArray(new int[0][]);
     }
 // * * * * * * * * * * 第五题，Insert Interval [Over] * * * * * * * * * *
@@ -181,10 +204,15 @@ public class A_ScanningLine {
     public static List<List<Integer>> removeInterval(int[][] intervals, int[] toBeRemoved){
         List<List<Integer>> res = new ArrayList<>();
         for (int[] i : intervals) {
-            if(i[1] <= toBeRemoved[0] || i[0] >= toBeRemoved[1]) res.add(Arrays.asList(i[0],i[1]));//没有overlap
-            else {// i[1] > toBeRemoved[0] && i[0] < toBeRemoved[1]
-                if(i[0] < toBeRemoved[0]) res.add(Arrays.asList(i[0], toBeRemoved[0]));//left end extra, remain
-                if(i[1] > toBeRemoved[1]) res.add(Arrays.asList(toBeRemoved[1], i[1]));//right end extra, remain
+            if(i[1] <= toBeRemoved[0] || i[0] >= toBeRemoved[1]) {
+                res.add(Arrays.asList(i[0],i[1]));//没有overlap
+            } else {// i[1] > toBeRemoved[0] && i[0] < toBeRemoved[1]
+                if(i[0] < toBeRemoved[0]) {
+                    res.add(Arrays.asList(i[0], toBeRemoved[0]));//left end extra, remain
+                }
+                if(i[1] > toBeRemoved[1]) {
+                    res.add(Arrays.asList(toBeRemoved[1], i[1]));//right end extra, remain
+                }
             }
         }
         return res;
@@ -192,7 +220,9 @@ public class A_ScanningLine {
 // * * * * * * * * * * 第六题，Remove Interval [Over] * * * * * * * * * *
 // * * * * * * * * * * 第七题，Non-overlapping Intervals * * * * * * * * * *
     public static int eraseOverlapIntervals(int[][] intervals){
-        if(intervals.length == 0) return 0;
+        if(intervals.length == 0) {
+            return 0;
+        }
         //按照结束时间排序
         Arrays.sort(intervals, (a, b) -> a[1] - b[1]);
         int count = 0;
@@ -200,8 +230,11 @@ public class A_ScanningLine {
         //如果冲突总是删除end靠后的，给下一个比较的interval留下更多的空间。(即md文件的解题思路里有overlap就删除current)
         for (int i = 1; i < intervals.length; i++) {
             int[] cur = intervals[i];
-            if(end <= cur[0]) end = cur[1];
-            else count++;
+            if(end <= cur[0]) {
+                end = cur[1];
+            } else {
+                count++;
+            }
         }
         return count;
     }
@@ -227,21 +260,31 @@ public class A_ScanningLine {
 
         public static void addNum(int val){
             int[] interval = new int[]{val, val};
-            if(set.contains(interval)) return;
+            if(set.contains(interval)) {
+                return;
+            }
             int[] low = set.lower(interval);//这里因为interval是(val, val)，low[0]一定小于val
             int[] high = set.higher(interval);//这里的high可能是(val, val+)的形式，所以需要if判断
-            if(high != null && high[0] == val) return;
+            if(high != null && high[0] == val) {
+                return;
+            }
             if(low != null && low[1]+1 == val && high != null && val+1 == high[0]){//两端都可合并
                 low[1] = high[1];
                 set.remove(high);
             }
-            else if(low != null && low[1]+1 >= val) low[1] = Math.max(low[1], val);//可以和左侧的low合并
-            else if(high != null && val+1 == high[0]) high[0] = val;//可以和右侧的high合并
-            else set.add(interval);
+            else if(low != null && low[1]+1 >= val) {
+                low[1] = Math.max(low[1], val);//可以和左侧的low合并
+            } else if(high != null && val+1 == high[0]) {
+                high[0] = val;//可以和右侧的high合并
+            } else {
+                set.add(interval);
+            }
         }
         public static int[][] getIntervals(){
             List<int[]> res = new ArrayList<>();
-            for (int[] interval : set) res.add(interval);
+            for (int[] interval : set) {
+                res.add(interval);
+            }
             return res.toArray(new int[0][]);
         }
     }
@@ -259,10 +302,15 @@ public class A_ScanningLine {
             int intersectEnd = Math.min(slots1[i][1], slots2[j][1]);//公共结束时间，较早的结束
             if(intersectEnd - intersectStart >= duration)
 //                return List.of(intersectStart, intersectStart+duration);//JAVA9特性
+            {
                 return Arrays.asList(intersectStart, intersectStart+duration);
+            }
                 //结束时间早的换下一个time slot
-            else if(slots1[i][1] < slots2[j][1]) i++;
-            else j++;
+            else if(slots1[i][1] < slots2[j][1]) {
+                i++;
+            } else {
+                j++;
+            }
         }
         return new ArrayList<>();
     }
@@ -276,9 +324,14 @@ public class A_ScanningLine {
         while (i < A.length && j < B.length){
             int low = Math.max(A[i][0], B[j][0]);
             int high = Math.min(A[i][1], B[j][1]);
-            if(low <= high) res.add(new int[]{low, high});
-            if(A[i][1] < B[j][1]) i++;
-            else j++;
+            if(low <= high) {
+                res.add(new int[]{low, high});
+            }
+            if(A[i][1] < B[j][1]) {
+                i++;
+            } else {
+                j++;
+            }
         }
         return res.toArray(new int[0][]);
     }
@@ -323,8 +376,11 @@ public class A_ScanningLine {
         int preMax = 0;
         for (int[] h : height) {
             int point = h[0], high = h[1];
-            if(high < 0) pq.offer(-high);//如果是左端点，说明存在一条往右延伸的可记录的边，将高度存入优先队列
-            else pq.remove(high);        //如果是右端点，说明这条边结束了，将当前高度从队列中移除
+            if(high < 0) {
+                pq.offer(-high);//如果是左端点，说明存在一条往右延伸的可记录的边，将高度存入优先队列
+            } else {
+                pq.remove(high);        //如果是右端点，说明这条边结束了，将当前高度从队列中移除
+            }
             // 取出最高高度，如果当前不与前一矩形“上边”延展而来的那些边重合，则可以被记录
             int curMax = pq.peek();
             if(curMax != preMax){
@@ -357,18 +413,26 @@ public class A_ScanningLine {
         int preMax = 0;
         for (int[] point : buildingPoints) {
             int start = point[0], high = point[1];
-            if(high < 0) pq.offer(-high);
+            if(high < 0) {
+                pq.offer(-high);
+            }
             // 不是真的删除 buildingPoint[1]，把它放进 delayed，等到堆顶元素是 buildingPoint[1] 的时候，才真的删除
-            else delayed.put(high, delayed.getOrDefault(high, 0) + 1);
+            else {
+                delayed.put(high, delayed.getOrDefault(high, 0) + 1);
+            }
             //如果堆顶元素在延迟集合中，才真正删除，这一步可能执行多次，所以放在while中
             //while(true) 也可以，因为pq一定不会为空
             while (!pq.isEmpty()){
                 int curMax = pq.peek();
                 if(delayed.containsKey(curMax)){
                     delayed.put(curMax, delayed.get(curMax) - 1);
-                    if(delayed.get(curMax) == 0) delayed.remove(curMax);
+                    if(delayed.get(curMax) == 0) {
+                        delayed.remove(curMax);
+                    }
                     pq.poll();
-                }else break;
+                }else {
+                    break;
+                }
             }
             int curMax = pq.peek();
             //有高度差，才有关键点出现
@@ -409,7 +473,9 @@ public class A_ScanningLine {
             // 线段树中, 比实际位置要+1(数据从1开始的)
             int s = map.get(b[0]) + 1;
             int e = map.get(b[1]);
-            if(s > e) continue; // 纸片楼
+            if(s > e) {
+                continue; // 纸片楼
+            }
             int h = b[2];
             seg.update(s, e, h, 1, N, 1);
         }
